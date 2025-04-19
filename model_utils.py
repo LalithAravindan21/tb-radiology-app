@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 import cv2
 
-model = YOLO("best.pt")
+model = YOLO("best (2).pt")
 
 
 def process_image_and_generate_report(file, name, age, gender, date):
