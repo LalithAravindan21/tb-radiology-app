@@ -17,24 +17,18 @@ async def home(request: Request):
     # Just return the page with no image and report (initial state)
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/predict/", response_class=HTMLResponse)
-async def predict(
-    request: Request,
-    file: UploadFile = File(...),
-    name: str = Form(...),
-    age: int = Form(...),
-    gender: str = Form(...),
-    date: str = Form(...)
-):
-    # Call your model prediction function, passing the file and patient data
-    image_b64, report = await predict_tb(file, name, age, gender, date)
+@app.post("/predict/")
+async def predict(file: UploadFile = File(...), 
+                  name: str = Form(...), 
+                  age: int = Form(...), 
+                  gender: str = Form(...), 
+                  date: str = Form(...)):
 
-    # Re-render the template with the results
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "image": image_b64,
-            "report": report
-        }
-    )
+    # 🛠️ Removed 'await' from here
+    image_b64, report = predict_tb(file, name, age, gender, date)
+
+    return templates.TemplateResponse("index.html", {
+        "request": {},
+        "image": image_b64,
+        "report": report
+    })
