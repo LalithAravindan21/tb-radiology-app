@@ -4,3 +4,4 @@ jinja2
 ultralytics
 opencv-python
 pillow
+python-multipart
