@@ -1,40 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TB Detection Tool for Radiologists</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <title>TB Detection Tool for Radiologists</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 16px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #e6f3ff;
+        }
+
+        .result img {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .green {
+            color: green;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-8">
+<body>
+    <div class="container">
+        <h2>TB Detection Tool for Radiologists</h2>
 
-  <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">TB Detection Tool for Radiologists</h1>
+        <form action="/register/" method="post">
+            <input type="text" name="patient_id" placeholder="Patient ID" required>
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="number" name="age" placeholder="Age" required>
+            <select name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <button type="submit" style="background-color: #1e90ff;">Register Patient</button>
+        </form>
 
-    <!-- Patient Registration Form -->
-    <form action="/predict/" method="post" enctype="multipart/form-data" class="space-y-4">
-      <input name="name" type="text" placeholder="Patient Name" required class="w-full p-2 border rounded"/>
-      <input name="age" type="number" placeholder="Age" required class="w-full p-2 border rounded"/>
-      <input name="gender" type="text" placeholder="Gender" required class="w-full p-2 border rounded"/>
-      <input name="date" type="text" placeholder="Date" required class="w-full p-2 border rounded"/>
-      
-      <div class="flex justify-between">
-        <input name="file" type="file" accept="image/*" required class="p-2 border rounded w-full"/>
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded ml-4">Register Patient</button>
-      </div>
-    </form>
+        <form action="/predict/" method="post" enctype="multipart/form-data">
+            <input type="text" name="patient_id" placeholder="Patient ID" required>
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Upload X-ray</button>
+        </form>
 
-    <!-- Result Block: Only show if image and report are present -->
-    {% if image and report %}
-      <div class="mt-6">
-        <h2 class="text-xl font-semibold mb-2">Annotated X-ray</h2>
-        <img src="data:image/jpeg;base64,{{ image }}" class="w-full rounded shadow"/>
+        {% if image_b64 %}
+        <div class="result">
+            <div class="section-title">🩻 Annotated X-ray:</div>
+            <img src="data:image/png;base64,{{ image_b64 }}" alt="Annotated X-ray">
 
-        <h2 class="text-xl font-semibold mt-6 mb-2">Report</h2>
-        <pre class="bg-gray-50 p-4 rounded">{{ report | tojson(indent=2) }}</pre>
-      </div>
-    {% endif %}
-  </div>
-
+            <div class="section-title">📝 Report</div>
+            <p><strong>Condition:</strong> <span class="{{ 'red' if report.condition != 'Healthy' else 'green' }}">{{ report.condition }}</span></p>
+            <p><strong>Accuracy:</strong> {{ report.accuracy }}%</p>
+            <p><strong>Recommendation:</strong> {{ report.recommendation }}</p>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>
