@@ -1,36 +1,65 @@
-from fastapi import FastAPI, Form, File, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, File, UploadFile, Form
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-import shutil
 import os
+from datetime import datetime
 
 app = FastAPI()
 
+# Ensure static/uploads folder exists
+os.makedirs("static/uploads", exist_ok=True)
+
+# Mount static files (to serve index.html and assets)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.post("/register/")
-async def register_patient(id: str = Form(...), name: str = Form(...), age: int = Form(...), gender: str = Form(...)):
-    # You can store the patient in a DB if needed
-    return {"message": "Patient registered successfully"}
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    with open("static/index.html", "r") as file:
+        return HTMLResponse(content=file.read())
 
-@app.post("/predict/", response_class=HTMLResponse)
-async def predict(file: UploadFile = File(...), patient_id: str = Form(...)):
-    upload_folder = "static/uploads"
-    os.makedirs(upload_folder, exist_ok=True)
+@app.post("/predict/")
+async def predict(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    date: str = Form(...)
+):
+    try:
+        # Save uploaded image
+        filename = file.filename
+        file_path = f"static/uploads/{filename}"
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
 
-    file_path = os.path.join(upload_folder, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        # Dummy prediction logic — replace with model inference
+        disease_probability = 0.78  # Example: 78% TB
+        severity = (
+            "Mild" if disease_probability < 0.5 else
+            "Moderate" if disease_probability < 0.8 else
+            "Severe"
+        )
+        recommendation = (
+            "Routine follow-up" if severity == "Mild" else
+            "Schedule further tests" if severity == "Moderate" else
+            "Immediate medical attention required"
+        )
 
-    # Fake inference & report for now
-    # You can replace this with actual model + GPT
-    severity = "Moderate"
-    accuracy = 87.3
+        # Dummy Google API logic placeholder (you would use the API key here if needed)
+        # Example: query medical articles based on severity, condition, etc.
 
-    html = f"""
-        <h3>AI Report</h3>
-        <p><strong>Condition:</strong> {severity} TB detected</p>
-        <p><strong>Accuracy:</strong> {accuracy:.2f}%</p>
-        <p><strong>Recommendation:</strong> Immediate clinical follow-up suggested.</p>
-    """
-    return HTMLResponse(content=html)
+        report = {
+            "name": name,
+            "age": age,
+            "gender": gender,
+            "date": date,
+            "image_url": f"/static/uploads/{filename}",
+            "disease_probability": f"{disease_probability*100:.2f}%",
+            "severity": severity,
+            "recommendation": recommendation
+        }
+
+        return JSONResponse(content=report)
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
