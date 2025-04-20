@@ -14,8 +14,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    with open("static/index.html", "r") as file:
-        return HTMLResponse(content=file.read())
+    try:
+        with open("static/index.html", "r") as file:
+            return HTMLResponse(content=file.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>index.html not found</h1>", status_code=404)
 
 @app.post("/predict/")
 async def predict(
@@ -32,29 +35,31 @@ async def predict(
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
 
-        # Dummy prediction logic — replace with model inference
-        disease_probability = 0.78  # Example: 78% TB
+        # Dummy prediction logic — replace with real model inference
+        disease_probability = 0.78  # Just a placeholder
+
+        # Determine severity
         severity = (
             "Mild" if disease_probability < 0.5 else
             "Moderate" if disease_probability < 0.8 else
             "Severe"
         )
+
+        # Recommendation based on severity
         recommendation = (
             "Routine follow-up" if severity == "Mild" else
             "Schedule further tests" if severity == "Moderate" else
             "Immediate medical attention required"
         )
 
-        # Dummy Google API logic placeholder (you would use the API key here if needed)
-        # Example: query medical articles based on severity, condition, etc.
-
+        # Dummy report — can be extended with Google API call if needed
         report = {
             "name": name,
             "age": age,
             "gender": gender,
             "date": date,
             "image_url": f"/static/uploads/{filename}",
-            "disease_probability": f"{disease_probability*100:.2f}%",
+            "disease_probability": f"{disease_probability * 100:.2f}%",
             "severity": severity,
             "recommendation": recommendation
         }
