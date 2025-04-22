@@ -2,17 +2,8 @@ from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
-from datetime import datetime
 
 app = FastAPI()
-
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"status": "OK", "message": "TB X‑Ray API is running"}
 
 # Ensure static/uploads folder exists
 os.makedirs("static/uploads", exist_ok=True)
@@ -20,6 +11,12 @@ os.makedirs("static/uploads", exist_ok=True)
 # Mount static files (to serve index.html and assets)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Root endpoint to check the status
+@app.get("/")
+def read_root():
+    return {"status": "OK", "message": "TB X‑Ray API is running"}
+
+# Endpoint to serve the index.html for uploading files
 @app.get("/", response_class=HTMLResponse)
 async def root():
     try:
@@ -28,6 +25,7 @@ async def root():
     except FileNotFoundError:
         return HTMLResponse(content="<h1>index.html not found</h1>", status_code=404)
 
+# Endpoint to handle file uploads and predictions
 @app.post("/predict/")
 async def predict(
     file: UploadFile = File(...),
