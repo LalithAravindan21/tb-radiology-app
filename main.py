@@ -6,6 +6,14 @@ from datetime import datetime
 
 app = FastAPI()
 
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"status": "OK", "message": "TB X‑Ray API is running"}
+
 # Ensure static/uploads folder exists
 os.makedirs("static/uploads", exist_ok=True)
 
